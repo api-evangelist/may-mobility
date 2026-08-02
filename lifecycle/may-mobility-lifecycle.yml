@@ -1,0 +1,96 @@
+generated: '2026-08-01'
+method: searched
+source:
+- https://docs.maymobility.com/docs/release-notes/batch-api
+- https://docs.maymobility.com/docs/release-notes/realttime-api
+- https://www.peeringdb.com/net/23152
+versioning:
+  scheme: major version, not expressed in the URL
+  current: v2.0.0
+  previous: v1
+  in_path: false
+  in_header: false
+  negotiation: none published
+  docs:
+  - https://docs.maymobility.com/docs/release-notes/batch-api
+  - https://docs.maymobility.com/docs/release-notes/realttime-api
+  note: Version appears only as a heading on the release-notes pages. No version
+    segment, header or query parameter is documented on any endpoint or topic.
+deprecation:
+  policy_url: null
+  policy_published: false
+  sunset_header: false
+  deprecation_header: false
+  note: 'No deprecation policy, notice period, sunset date or migration guide is
+    published. NO `Deprecation` pointer has been wired for this provider, because a
+    completed version retirement is not a deprecation policy.'
+  historical_retirements:
+  - api: May Mobility Fleet Realtime API
+    version: v1
+    status: discontinued
+    date: null
+    date_note: Undated. The v2 rewrite is dated August 2023 in the release notes; the
+      v1 retirement itself carries no date.
+    breaking: true
+    detail: v1 used a NATS client SDK with client-side protobuf decoding. v2 replaced
+      it with WebSockets, server-side protobuf-to-JSON conversion and AWS Cognito
+      auth. This is a full transport and authentication replacement, announced only
+      as a "Discontinued" note.
+  - api: May Mobility Fleet Batch (REST) API
+    version: v1
+    status: discontinued
+    date: null
+    breaking: true
+    detail: v1 supported retrieval across all vehicles with topic filtering. v2 added
+      timestamp filtering and imposed the 10-minute window and 7-day retention limits.
+deprecated_operations: []
+deprecated_operations_note: No OpenAPI exists to derive deprecated operations from.
+  Three topics are documented as unavailable on a vehicle platform rather than
+  deprecated — DRIVE_STATUS, DRIVER_TAKEOVER and LIGHTING_STATUS are each marked
+  "unavailable for Lexus vehicles".
+sla:
+  url: null
+  uptime_target: null
+  published: false
+  note: No SLA, uptime target or support-response commitment is published for the
+    Fleet API. Access is contract-provisioned by the Fleet API team, so terms are
+    presumed to be per-agreement.
+status_page:
+  url: https://status.net.maymobility.com/
+  provider: UptimeRobot
+  scope: network / NOC infrastructure
+  advertised_in: https://www.peeringdb.com/net/23152
+  covers_fleet_api: unknown
+  probe:
+    date: '2026-08-01'
+    http_status: null
+    result: tls-handshake-failure
+    detail: 'http://status.net.maymobility.com/ returns HTTP 308 Permanent Redirect
+      to the HTTPS URL (Server: Caddy), but the HTTPS handshake fails with
+      "tlsv1 alert internal error" from both OpenSSL/LibreSSL and Python ssl. DNS
+      resolves to stats.uptimerobot.com / psp-lb2.uptimerobot.com. The custom-domain
+      certificate appears not to be provisioned.'
+    reachable: false
+x-findings:
+- id: status-page-unreachable
+  severity: medium
+  detail: May Mobility advertises a status page in PeeringDB, but as observed on
+    2026-08-01 it cannot be loaded over HTTPS at all — the TLS handshake fails. A
+    status page that will not serve is worse than none during an incident, because
+    partners will still be pointed at it.
+- id: no-deprecation-policy
+  severity: medium
+  detail: Two whole API versions have been retired with no published notice period,
+    sunset date or migration path. Fleet partners integrating against v2 have no
+    stated protection against the same thing happening again.
+- id: changelog-stale
+  severity: low
+  detail: The most recent release-note entry is September 2024, roughly 23 months
+    before this observation.
+- id: no-sla
+  severity: low
+  detail: No uptime or support commitment is published for a surface that streams
+    safety-relevant telemetry (RUNLEVEL, DRIVER_TAKEOVER, COLLISION_NOTIFICATION).
+cross_links:
+  changelog: changelog/may-mobility-changelog.yml
+  conventions: conventions/may-mobility-fleet-conventions.yml

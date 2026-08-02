@@ -1,0 +1,23 @@
+// Harvested verbatim from May Mobility Fleet API documentation.
+// Source: https://docs.maymobility.com/docs/fleet-api/video-data-output
+// generated: 2026-08-01
+// method: searched
+//
+// This is the wire format of the May Mobility Fleet Realtime API video mode.
+// The `data` field carries a serialized `May.image_t` message; May Mobility
+// does not publish the `image_t` definition itself — language-specific
+// generated static packages (JS/TS, Go, C#, C++) are provided by the
+// Fleet API team on request.
+
+syntax = "proto3";
+
+message quic_wrapper {
+  enum Compression {
+    NONE = 0; ZSTD = 1;
+  }
+  int64 utime = 1;
+  bytes data = 2;
+  //mqtt_topic contains information about camera type. Example: if (mqtt_topic) contains "fc" then it is front center.
+  string mqtt_topic = 3;
+  Compression compression = 4;
+}

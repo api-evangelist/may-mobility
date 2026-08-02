@@ -1,0 +1,153 @@
+generated: '2026-08-01'
+method: derived
+source: https://docs.maymobility.com/docs/fleet-api/types-of-data
+derivation_note: 'Derived from the provider''s published endpoint paths, field tables
+  and JSON samples — May Mobility publishes no OpenAPI, so there are no $ref links to
+  walk. Every entity, field and relationship below is grounded in a documented path
+  or a documented field; nothing has been inferred beyond what the docs state.'
+identifiers:
+  vehicle:
+    field: vehicle / vehicleID / vehiclename
+    type: string
+    format: human-readable name, not an opaque ID
+    examples_from_docs: [marinara, mayble, testvehicle, examplevehicle]
+    note: The docs use "vehicle ID", "vehicle name" and "vehiclename" interchangeably
+      for the same value. It is a name string, provisioned by May Mobility, used both
+      as a path parameter and inside the topic address.
+  topic:
+    field: topic / topicName
+    type: string
+    format: SCREAMING_SNAKE_CASE enum-like name (GPS, POSE, DRIVE_STATUS, ...)
+  message_time:
+    field: utime
+    type: string
+    format: microseconds since epoch, UTC, carried as a string
+  pagination_cursor:
+    field: metaToken
+    type: string
+    format: opaque
+entities:
+- name: Vehicle
+  description: A May Mobility autonomous vehicle. The root entity of the whole Fleet
+    API — every other entity is addressed relative to a vehicle.
+  discovery: GET /vehicles
+  fields:
+  - {name: vehicle, type: string, role: identifier}
+  platform_note: Vehicle platform matters to the contract — DRIVE_STATUS,
+    DRIVER_TAKEOVER and LIGHTING_STATUS are documented as unavailable on Lexus
+    vehicles, so topic availability is per-platform, not uniform across the fleet.
+- name: Topic
+  description: A named telemetry stream available for a vehicle. Addressable both as
+    a Realtime subscription and (for 11 of the 15) as a Batch path segment.
+  discovery: GET /vehicles/{vehicleID}/topics
+  realtime_address: /.vehicle.{vehicleID}.{topicName}
+  batch_address: /vehicles/{vehicleID}/topics/{topicName}
+  fields:
+  - {name: topic, type: string, role: identifier}
+  - {name: frequency, type: number, role: publish rate in Hz, source: Batch meta
+      block}
+- name: TelemetryMessage
+  description: A single record on a topic. Every message carries utime, vehicle and
+    topic; the remaining fields are topic-specific.
+  common_fields:
+  - {name: utime, type: string}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  variants: 15 documented topic message shapes; see
+    asyncapi/may-mobility-fleet-events.yml for the full field tables.
+- name: BatchPage
+  description: One page of a Batch telemetry retrieval, covering 30 seconds of data.
+  fields:
+  - {name: data, type: array of TelemetryMessage}
+  - {name: metaToken, type: string, role: continuation cursor}
+  - {name: meta.totalPages, type: integer}
+  - {name: meta.totalRecords, type: integer}
+  - {name: meta.frequency, type: number}
+  - {name: meta.currentPage, type: integer}
+  - {name: meta.currentStartTime, type: number}
+  - {name: meta.currentEndTime, type: number}
+- name: Shift
+  description: A window during which a vehicle was in service on a given day.
+  discovery: GET /shift-timing?startTime={unix}&endTime={unix}&vehicle={names}
+  fields:
+  - {name: log_hash, type: string, role: identifier, format: '{vehicle}_{YYYY-MM-DD}_{HH-MM-SS}'}
+  - {name: shift_start_time, type: string, format: ISO 8601 with milliseconds, Z}
+  - {name: shift_end_time, type: string, format: ISO 8601 with milliseconds, Z}
+  - {name: vehicle, type: string, role: foreign key to Vehicle}
+- name: LastActive
+  description: The most recent time a vehicle was in service. Returned as a map keyed
+    by vehicle name.
+  discovery: GET /last-active?vehicles={names}
+  fields:
+  - {name: '{vehicleName}', type: string, format: 'MM-DD-YYYY HH:MM:SS, or the
+      sentinel sentence "vehicle hasn''t been active in the past 7 days"'}
+  retention: 7 days
+- name: LidarExport
+  description: A generated ROSBAG file containing LiDAR data for a vehicle over a
+    window of up to 30 seconds. Produced by a two-step request-then-download flow.
+  discovery: GET /lidar?vehicle={name}&startTime={unix}&endTime={unix}
+  download: GET /download?filename={filename}
+  fields:
+  - {name: filename, type: string, format: '{uuid}.bag', example: 53494076-c6af-407d-8699-a17140d0b29f.bag}
+  retention: 5 days
+  generation_time: ~5 minutes
+  link_expiry: 10 minutes
+  sensor_note: Documented as "an abstraction of vehicle lidars (ousters and velodyne)
+    data".
+- name: VideoFrame
+  description: One serialized protobuf frame from a vehicle's exterior camera stream.
+  schema: grpc/may-mobility-quic-wrapper.proto
+  fields:
+  - {name: utime, type: int64}
+  - {name: data, type: bytes, role: serialized May.image_t}
+  - {name: mqtt_topic, type: string, role: encodes camera position, e.g. "fc" =
+      front center}
+  - {name: compression, type: enum, values: [NONE, ZSTD]}
+  inner_message_fields_documented:
+  - {name: encoding, values: [ENCODING_UNKNOWN, JPEG, VP8, VP9]}
+  - {name: frame type, values: [TYPE_UNKNOWN, KEY, DELTA]}
+  - {name: timestamp, role: frame number}
+  - {name: sequence, role: ordering; clients must re-sequence frames themselves}
+- name: PerceptionObject
+  description: A tracked object in the vehicle's perception output, published on the
+    TELE_OP_OBJECTS topic as tele_op_object_t.
+  fields:
+  - {name: id, type: int32, note: '-1 == EGO agent, otherwise a real object'}
+  - {name: pose, type: '[double]'}
+  - {name: quat, type: '[double]'}
+  - {name: vel, type: '[double]'}
+  - {name: poly, type: polygon_t}
+  - {name: classLabel, type: string}
+relationships:
+- {from: Vehicle, to: Topic, cardinality: has_many, via: '/vehicles/{vehicleID}/topics'}
+- {from: Topic, to: TelemetryMessage, cardinality: has_many, via: topic}
+- {from: Vehicle, to: TelemetryMessage, cardinality: has_many, via: vehicle}
+- {from: TelemetryMessage, to: Vehicle, cardinality: belongs_to, via: vehicle}
+- {from: TelemetryMessage, to: Topic, cardinality: belongs_to, via: topic}
+- {from: BatchPage, to: TelemetryMessage, cardinality: has_many, via: data}
+- {from: BatchPage, to: BatchPage, cardinality: has_one, via: metaToken, note: next
+    page}
+- {from: Vehicle, to: Shift, cardinality: has_many, via: vehicle}
+- {from: Shift, to: Vehicle, cardinality: belongs_to, via: vehicle}
+- {from: Vehicle, to: LastActive, cardinality: has_one, via: map key}
+- {from: Vehicle, to: LidarExport, cardinality: has_many, via: vehicle}
+- {from: Vehicle, to: VideoFrame, cardinality: has_many, via: subscription}
+- {from: VideoFrame, to: PerceptionObject, cardinality: none, note: 'separate
+    surfaces — video frames and perception objects are not correlated by any
+    published identifier beyond utime and vehicle'}
+- {from: TelemetryMessage, to: PerceptionObject, cardinality: has_many, via:
+    TELE_OP_OBJECTS topic}
+correlation:
+  join_keys: [vehicle, utime]
+  note: 'The only way to correlate across topics, video and LiDAR is by (vehicle,
+    utime). There is no trace ID, request ID, session ID or ride/trip ID anywhere in
+    the published surface — notably there is no Trip or Ride entity at all, so the
+    Fleet API describes vehicles and sensors, not journeys or passengers.'
+absent_entities:
+- {name: Trip / Ride, note: not exposed}
+- {name: Passenger / Rider, note: not exposed}
+- {name: Booking / Dispatch, note: not exposed}
+- {name: Route / Map, note: 'only indirectly, via ROUTE_LOCATION layerId and lla'}
+- {name: Site / Deployment, note: not exposed}
+render: null
+render_note: No subway/ diagram exists for this provider.

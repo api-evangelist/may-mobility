@@ -1,0 +1,407 @@
+generated: '2026-08-01'
+method: searched
+source: https://docs.maymobility.com/docs/fleet-api/types-of-data
+spec_type: null
+spec_type_note: 'May Mobility publishes NO AsyncAPI document. Every probe for one
+  missed (docs.maymobility.com/asyncapi.yaml 404, /asyncapi.json 404, no spec link
+  anywhere in the docs, no public GitHub repo). This file is therefore an
+  event-surface CATALOG harvested from the provider''s own per-topic documentation
+  pages — it is not, and must not be presented as, an AsyncAPI specification.'
+surface_type: websocket-streaming
+surface_note: 'The May Mobility Fleet Realtime API is a WebSocket pub/sub stream, not
+  an HTTP webhook callback surface. It is catalogued here because it is the
+  provider''s genuine event surface. Topics were previously delivered over a NATS
+  client SDK; release notes for v2.0.0 (August 2023) record the migration from NATS
+  to WebSockets, with protobuf-to-JSON conversion moved server-side.'
+transport:
+  protocol: websocket
+  auth: AWS Cognito client-credentials access token passed as a `token` URL query
+    parameter
+  encryption: 'All connections are encrypted (documented as: "Note: All connections
+    are encrypted").'
+  server_url: null
+  server_url_note: The connection domain is issued per account by the May Mobility
+    Fleet API team and is written as `domain` in all published examples. It is not
+    published and has not been guessed here.
+addressing:
+  realtime_topic_pattern: /.vehicle.{vehicleID}.{topicName}
+  realtime_subscription: Comma-separated topic list passed as a `topics` query
+    parameter, e.g. `domain/topics=/.vehicle.testvehicle.GPS,/.vehicle.examplevehicle.POSE`
+  video_subscription: Comma-separated vehicle list passed as a `vehicles` query
+    parameter, e.g. `domain/vehicles=vehiclename1,vehiclename2`
+  batch_path_pattern: /vehicles/{vehicleID}/topics/{topicName}
+limits:
+- limit: Maximum 20 topics per Realtime connection or request. Exceeding it fails the
+    connection with an error.
+- limit: Maximum 4 vehicles per video-mode connection or request. Exceeding it fails
+    the connection with an error.
+modes:
+- name: telemetry
+  description: Streams JSON messages for subscribed per-vehicle topics. Protobuf is
+    decoded to JSON server-side, so no protobuf tooling is needed on the client.
+  encoding: application/json
+- name: video
+  description: Streams exterior camera feeds. Output is a serialized `quic_wrapper`
+    protobuf whose `data` field carries a `May.image_t` message. Encodings observed
+    in the docs are JPEG, VP8 and VP9 (mostly VP9); frame types are KEY and DELTA.
+    Clients must sequence frames themselves; the docs publish a reference
+    `decodingWithFrameSequencing` routine in TypeScript.
+  encoding: application/x-protobuf
+  schema: grpc/may-mobility-quic-wrapper.proto
+  cameras: 'Camera position is carried in the `mqtt_topic` field of the wrapper —
+    e.g. a value containing "fc" denotes front center.'
+common_message_fields:
+- field: utime
+  datatype: string
+  description: Best estimate of when this message is from, host clock in UTC
+    (microseconds).
+- field: vehicle
+  datatype: string
+  description: Unique vehicle name the data is associated to.
+- field: topic
+  datatype: string
+  description: Type of telemetry data.
+channels:
+- name: GPS
+  topic: /.vehicle.{vehiclename}.GPS
+  batch_path: /vehicles/{vehiclename}/topics/GPS
+  realtime: true
+  batch: true
+  description: Provides latitude, longitude, and elevation information of a vehicle.
+    This also contains uncertainties on those measurements.
+  fields:
+  - {name: utime, type: string}
+  - {name: utimeGlobal, type: double, description: Global time of navigation solution
+      generation}
+  - {name: lat, type: double, description: latitude of a vehicle}
+  - {name: lon, type: double, description: longitude of a vehicle}
+  - {name: elevation, type: double, description: Meters above sea level}
+  - {name: horizDop, type: double, description: Horizontal Dilution of Precision}
+  - {name: timeDop, type: double, description: GPS Time Dilution of Precision}
+  - {name: nsats, type: int32, description: number of satellites}
+  - {name: errX, type: double, description: meters covariance East West}
+  - {name: errY, type: double, description: meters covariance North South}
+  - {name: errZ, type: double, description: meters covariance Up Down}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/gps
+- name: GPS_VELOCITY
+  topic: /.vehicle.{vehiclename}.GPS_VELOCITY
+  batch_path: /vehicles/{vehiclename}/topics/GPS_VELOCITY
+  realtime: true
+  batch: true
+  description: NED velocity, ground speed and heading of the vehicle with ublox
+    accuracy estimates.
+  fields:
+  - {name: utime, type: string}
+  - {name: utimeGlobal, type: double}
+  - {name: vNorth, type: double, description: NED north velocity m/s}
+  - {name: vEast, type: double, description: NED east velocity m/s}
+  - {name: vDown, type: double, description: NED down velocity m/s}
+  - {name: groundSpeed, type: double, description: ground speed (2-D) m/s}
+  - {name: heading, type: double, description: NED heading of motion (0.0 = North)
+      (2-D) rad}
+  - {name: speedAccuracy, type: double, description: ublox model speed estimate
+      accuracy m/s}
+  - {name: headingAccuracy, type: double, description: ublox model heading estimate
+      accuracy rad}
+  - {name: validFix, type: bool, description: GNSS fix is within ublox configured DOP
+      and accuracy masks}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/gps-velocity
+- name: POSE
+  topic: /.vehicle.{vehiclename}.POSE
+  batch_path: /vehicles/{vehiclename}/topics/POSE
+  realtime: true
+  batch: true
+  description: Provides position, orientation, linear velocity, angular velocity, and
+    linear acceleration for the rigid body of a vehicle.
+  fields:
+  - {name: utime, type: string, description: utime that the actual measurement took
+      place}
+  - {name: pos, type: '[double]', description: position (x,y,z) in meters in local
+      frame}
+  - {name: quat, type: '[double]', description: quaternion which rotates a vector
+      from body to local frame}
+  - {name: vel, type: '[double]', description: velocity in m/s, expressed in body
+      frame}
+  - {name: avel, type: '[double]', description: angular velocity about (x,y,z) in
+      rad/s in body frame}
+  - {name: acc, type: '[double]', description: acceleration in m/s^2 in body frame}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/pose
+- name: L2G
+  topic: /.vehicle.{vehiclename}.L2G
+  realtime: true
+  batch: false
+  description: Converts Local Position to Global Position (pose). Global position is
+    relative to the map.
+  fields:
+  - {name: topic, type: string}
+  - {name: vehicle, type: string}
+  - {name: utime, type: string, description: Time (UTC) of the L2G reading}
+  - {name: xyt, type: '[double]', description: 'Encoding of POSE channel as X, Y,
+      Theta — a vector to map (translate and rotate) pose''s position to the global
+      (RTN) position.'}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/l2g
+- name: ROUTE_LOCATION
+  topic: /.vehicle.{vehiclename}.ROUTE_LOCATION
+  batch_path: /vehicles/{vehiclename}/topics/ROUTE_LOCATION
+  realtime: true
+  batch: true
+  description: Provides details on the edge we are currently on or closest to in
+    route network, along with the latitude, longitude, and altitude associated with
+    that location.
+  fields:
+  - {name: utime, type: string}
+  - {name: layerId, type: '[string]', description: road, lane, navigation as defined
+      by route network}
+  - {name: lla, type: '[double]', description: latitude, longitude, altitude relative
+      to the route network (degrees, degrees, meters)}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/route-location
+- name: DRIVE_STATUS
+  topic: /.vehicle.{vehiclename}.DRIVE_STATUS
+  batch_path: /vehicles/{vehiclename}/topics/DRIVE_STATUS
+  realtime: true
+  batch: true
+  availability_note: This topic is unavailable for Lexus vehicles.
+  description: Provides details on throttle, brake and steering on a vehicle ride.
+  fields:
+  - {name: utime, type: string}
+  - {name: throttleValid, type: bool}
+  - {name: throttleUtime, type: string}
+  - {name: throttle, type: double, description: 'forward is positive and reverse is
+      negative [-1, 1]; reports last known state. Throttle does not exist when brake
+      is applied, in which case brake is available in its place.'}
+  - {name: brakeValid, type: bool}
+  - {name: brakeUtime, type: string}
+  - {name: steerValid, type: bool}
+  - {name: steerUtime, type: string}
+  - {name: steer, type: double, description: wheel angle, left is positive and right
+      is negative; reports last known state}
+  - {name: shiftValid, type: bool}
+  - {name: shiftUtime, type: string}
+  - {name: shift, type: int32, description: SHIFT type enum; reports last known state}
+  - {name: modeValid, type: bool}
+  - {name: modeUtime, type: string}
+  - {name: mode, type: int32, description: MODE type enum; reports last known state}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/drive-status
+- name: RUNLEVEL
+  topic: /.vehicle.{vehiclename}.RUNLEVEL
+  batch_path: /vehicles/{vehiclename}/topics/RUNLEVEL
+  realtime: true
+  batch: true
+  description: Provides information if the vehicle is in manual or autonomy.
+  safety_relevant: true
+  fields:
+  - {name: utime, type: string}
+  - {name: runlevel, type: string, description: The current runlevel for the system —
+      the actual mode the vehicle is being driven in (autonomy or manual).}
+  - {name: healthRunlevel, type: string, description: 'Runlevel specified by the
+      health monitoring system. "nominal" means the vehicle is capable of autonomous
+      driving; any value other than nominal or controlled stop means it is not and
+      the safety driver must take over.'}
+  - {name: requestedRunlevel, type: string, description: The runlevel currently being
+      requested by a user.}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/runlevel
+- name: DRIVER_TAKEOVER
+  topic: /.vehicle.{vehiclename}.DRIVER_TAKEOVER
+  batch_path: /vehicles/{vehiclename}/topics/DRIVER_TAKEOVER
+  realtime: true
+  batch: true
+  availability_note: This topic is unavailable for Lexus vehicles.
+  safety_relevant: true
+  description: Driver Intervention signals and determination of Takeover Status, as
+    well as safety cross checks of associated signals.
+  fields:
+  - {name: utime, type: string}
+  - {name: primaryChannelIntervention, type: integer, description: Takeover determined
+      from a primary channel (0 or 1)}
+  - {name: secondaryChannelIntervention, type: integer, description: 'For internal
+      use only: takeover determined from secondary channel (0 or 1)'}
+  - {name: adnDetectedTakeover, type: integer, description: 'For internal use only:
+      takeover determined from the two channel interventions'}
+  - {name: adnModeCommand, type: integer, description: 'For internal use only:
+      takeover determined from interventions'}
+  - {name: mayIntervention, type: boolean, description: Whether there was a driver
+      takeover, based on adnDetectedTakeover and the channel interventions.}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/driver-takeover
+- name: COLLISION_NOTIFICATION
+  topic: /.vehicle.{vehiclename}.COLLISION_NOTIFICATION
+  realtime: true
+  batch: false
+  safety_relevant: true
+  description: This event is triggered when an impact is detected on ego.
+  fields:
+  - {name: utime, type: string}
+  - {name: impact_detection, type: string, description: 'NORMAL_STATUS,
+      CRASH_DETECTION_AIRBAG, CRASH_DETECTION_NON_AIRBAG, INVALID_VALUE'}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  enums:
+    impact_detection:
+    - {value: NORMAL_STATUS, meaning: normal, no impact detected}
+    - {value: IMPACT_POINT, meaning: Crash detection with activated airbag; shuts off
+        high voltage circuit, with airbag deployment.}
+    - {value: CRASH_DETECTION_AIRBAG, meaning: Crash detection; shuts off high voltage
+        circuit, without airbag deployment.}
+    - {value: INVALID_VALUE, meaning: Invalid value}
+  note: 'The field table and the enum table disagree — the field description lists
+    CRASH_DETECTION_NON_AIRBAG while the enum table lists IMPACT_POINT in its place.
+    Recorded verbatim as published; not reconciled.'
+  added: '2026-04 (April 2024 release notes)'
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/collision-detected
+- name: TRAFFIC_LIGHT
+  topic: /.vehicle.{vehiclename}.TRAFFIC_LIGHT
+  realtime: true
+  batch: false
+  description: Provides current status of the traffic light and the distance to the
+    next traffic light per May's Planner.
+  fields:
+  - {name: utime, type: string, description: Local machine time when this list was
+      generated}
+  - {name: distance, type: int32, description: 'distance to the next traffic light we
+      plan to wait for; -1 if no traffic light is currently relevant'}
+  - {name: signal_type, type: SignalType, description: Configuration of traffic light}
+  - {name: status_straight_turn, type: Status, description: Estimate of the light
+      status}
+  - {name: status_right_turn, type: Status, description: Estimate of the light status}
+  - {name: status_left_turn, type: Status, description: Estimate of the light status}
+  added: '2024-06 (June 2024 release notes)'
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/traffic-light
+- name: VEHICLE_STATE
+  topic: /.vehicle.{vehiclename}.VEHICLE_STATE
+  realtime: true
+  batch: false
+  description: 'Provides a comprehensive overview of a vehicle''s status, including
+    the state of signals, lights, windows, windshield wipers, airbags, access control,
+    seat belts, AC temperature, tire pressure, odometer, fuel status, and the
+    vehicle''s VIN. The topic is organised into subtopics (for instance "Seat Belts")
+    each broken into their own fields.'
+  subtopics:
+  - name: Seat Belts
+    fields:
+    - seatBeltStatus1L
+    - seatBeltStatus1R
+    - seatBeltStatus2L
+    - seatBeltStatus2R
+    - seatBeltStatus3L
+    - seatBeltStatus3R
+    - seatBeltStatus3C
+    values: 'BUCKLED, UNBUCKLED, Undetermined (sensor not working just after IG-ON,
+      communication disruption to the seat sensor, or switch fault)'
+  added: '2024-04 (April 2024 release notes)'
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/vehicle-state
+- name: HEALTH_SUMMARY
+  topic: /.vehicle.{vehiclename}.HEALTH_SUMMARY
+  batch_path: /vehicles/{vehiclename}/topics/HEALTH_SUMMARY
+  realtime: true
+  batch: true
+  description: Outputs the status/errors of various modules running in a vehicle.
+  fields:
+  - {name: utime, type: string, description: Local machine utime of the most recently
+      reported health update}
+  - {name: statuses, type: '[Statuses]', description: Array of Statuses}
+  - {name: nuids, type: uint32, description: How many uids there are in the report}
+  - {name: nfields, type: uint32, description: How many reporting fields for every
+      uid there are}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/health-summary
+- name: PLATFORM_HEALTH
+  topic: /.vehicle.{vehiclename}.PLATFORM_HEALTH
+  batch_path: /vehicles/{vehiclename}/topics/PLATFORM_HEALTH
+  realtime: true
+  batch: true
+  description: Provides details on the compute, storage, power and processes of a
+    vehicle.
+  fields:
+  - {name: utime, type: string}
+  - {name: groupId, type: Group Id, description: Each group is identified by its ID}
+  - {name: value, type: uint32, description: the value of interpretation}
+  - {name: valueId, type: Value Id, description: the ID that defines the
+      interpretation of the value}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/platform-health
+- name: LIGHTING_STATUS
+  topic: /.vehicle.{vehiclename}.LIGHTING_STATUS
+  batch_path: /vehicles/{vehiclename}/topics/LIGHTING_STATUS
+  realtime: true
+  batch: true
+  availability_note: This topic is unavailable for Lexus vehicles.
+  description: Provides details on the condition of all the lights that are reported
+    on by firmware.
+  fields:
+  - {name: utime, type: string}
+  - {name: output, type: uint32, description: bitfield of lights that are reported on
+      by firmware}
+  - {name: vehicle, type: string}
+  - {name: topic, type: string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/lighting-status
+- name: TELE_OP_OBJECTS
+  topic: /.vehicle.{vehiclename}.TELE_OP_OBJECTS
+  batch_path: /vehicles/{vehiclename}/topics/TELE_OP_OBJECTS
+  realtime: true
+  batch: true
+  description: Perception object list published for teleoperation, as tele_op_object_t
+    entries.
+  fields:
+  - {name: utime, type: string, description: Local machine time when this list was
+      generated}
+  - {name: id, type: int32, description: 'The ID of the object; -1 == EGO agent, else
+      a real object'}
+  - {name: vel, type: '[double]', description: 'estimated velocity vector for the
+      object in global frame [m/s]'}
+  - {name: pose, type: '[double]', description: position (x,y,z) in meters in global
+      frame}
+  - {name: quat, type: '[double]', description: quaternion which rotates a vector
+      from body to global frame}
+  - {name: poly, type: polygon_t, description: A bounding polygon for the object in
+      global frame}
+  - {name: classLabel, type: string, description: The maximum probability class of
+      this object as a human readable string}
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/teleop-objects
+batch_only_resources:
+- name: LIDAR
+  description: This object is an abstraction of vehicle lidar (Ouster and Velodyne)
+    data. Retrieved through a two-step Batch API flow.
+  realtime: false
+  batch: true
+  format: ROSBAG
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/lidar
+- name: SHIFT_TIMING
+  description: Vehicle shifts associated with a vehicle and day.
+  realtime: false
+  batch: true
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/vehicle-shift-timing
+- name: LAST_ACTIVE
+  description: Last time a vehicle was in service, as an ISO DateTime.
+  realtime: false
+  batch: true
+  docs: https://docs.maymobility.com/docs/fleet-api/topics-channels/last-active
+coverage:
+  realtime_channels: 15
+  batch_capable_channels: 11
+  realtime_only_channels: 4
+  batch_only_resources: 3
+  safety_relevant_channels: 3
+x-evidence:
+  fetched: '2026-08-01'
+  pages:
+  - https://docs.maymobility.com/docs/intro
+  - https://docs.maymobility.com/docs/fleet-api/types-of-data
+  - https://docs.maymobility.com/docs/fleet-api/video-data-output
+  - https://docs.maymobility.com/docs/fleet-api/decoding-a-message
+  - https://docs.maymobility.com/docs/fleet-api/topics-channels/* (18 pages)
+  http_status: 200

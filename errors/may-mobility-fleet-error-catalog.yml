@@ -1,0 +1,151 @@
+generated: '2026-08-01'
+method: searched
+source: https://docs.maymobility.com/docs/fleet-api/types-of-data
+format: none
+format_note: 'May Mobility publishes NO error reference, NO status-code table and NO
+  error envelope. There is no RFC 9457 application/problem+json, no error code
+  registry and no machine-readable schema. The entries below are the only failure
+  conditions the documentation describes anywhere, extracted verbatim from prose
+  inside the feature pages. Status codes are recorded as `unknown` because the
+  provider does not state them — none have been guessed.'
+error_envelope:
+  published: false
+  note: No error response shape is documented for either the Realtime or the Batch
+    surface.
+problems:
+- id: too-many-topics
+  surface: realtime
+  status: unknown
+  condition: More than 20 topics requested in a single connection or request.
+  documented_behaviour: '"the connection will not go through and it will throw an
+    error"'
+  error_shape: not published
+  remediation: Split the subscription across multiple connections, at most 20 topics
+    each.
+  source: https://docs.maymobility.com/docs/fleet-api/types-of-data
+- id: too-many-video-vehicles
+  surface: realtime
+  status: unknown
+  condition: More than 4 vehicles requested for video streaming in a single
+    connection or request.
+  documented_behaviour: '"the connection will not go through and it will throw an
+    error"'
+  error_shape: not published
+  remediation: Split the video subscription across multiple connections, at most 4
+    vehicles each.
+  source: https://docs.maymobility.com/docs/fleet-api/video-data-output
+- id: vehicle-not-active
+  surface: batch
+  status: unknown
+  condition: A vehicle has not been in service within the last 7 days when queried
+    via /last-active.
+  documented_behaviour: 'The value for that vehicle in the response object is the
+    literal string "vehicle hasn''t been active in the past 7 days" in place of a
+    timestamp.'
+  error_shape: in-band sentinel string in a success response
+  remediation: Treat any non-timestamp value as "unknown / out of retention"; do not
+    parse the field as a date unconditionally.
+  source: https://docs.maymobility.com/docs/fleet-api/topics-channels/last-active
+  note: This is a soft error returned inside a 2xx payload rather than an error
+    response, and it is type-unsafe — the same JSON field is either a datetime or an
+    English sentence.
+- id: no-current-day-data
+  surface: batch
+  status: unknown
+  condition: A Batch request covers the current day.
+  documented_behaviour: '"No data is available for the current day via Batch (REST
+    endpoints) api, please use Realtime API for that."'
+  error_shape: not published
+  remediation: Use the Realtime API for same-day data.
+  source: https://docs.maymobility.com/docs/fleet-api/types-of-data
+- id: window-exceeds-maximum
+  surface: batch
+  status: unknown
+  condition: The requested startTime/endTime window exceeds 10 minutes.
+  documented_behaviour: Documented only as a limit ("The maximum duration you can
+    request is 10 minutes"); the failure response is not described.
+  error_shape: not published
+  remediation: Chunk the request into windows of 10 minutes or less.
+  source: https://docs.maymobility.com/docs/fleet-api/types-of-data
+- id: outside-retention-window
+  surface: batch
+  status: unknown
+  condition: The requested window is more than 7 days old (telemetry / last-active).
+  documented_behaviour: '"We can only retrieve data starting from 7 days ago up to
+    the current day."'
+  error_shape: not published
+  remediation: Retrieve and persist telemetry within the 7-day window.
+  source: https://docs.maymobility.com/docs/fleet-api/types-of-data
+- id: lidar-log-archived
+  surface: batch
+  status: unknown
+  condition: The requested LiDAR logs are more than 5 days old.
+  documented_behaviour: '"Data older than this duration will have been archived and
+    will not be accessible through this API."'
+  error_shape: not published
+  remediation: Request LiDAR exports within 5 days of capture.
+  source: https://docs.maymobility.com/docs/fleet-api/topics-channels/lidar
+- id: lidar-starttime-too-recent
+  surface: batch
+  status: unknown
+  condition: LiDAR startTime is a timestamp from the current day.
+  documented_behaviour: '"the start time must not be a timestamp from the current
+    day; it should be at least a day old"'
+  error_shape: not published
+  remediation: Use a startTime at least one day old.
+  source: https://docs.maymobility.com/docs/fleet-api/topics-channels/lidar
+- id: lidar-window-too-long
+  surface: batch
+  status: unknown
+  condition: LiDAR endTime is more than 30 seconds after startTime.
+  documented_behaviour: '"The maximum end time allowed is 30 seconds."'
+  error_shape: not published
+  remediation: Request LiDAR in 30-second segments.
+  source: https://docs.maymobility.com/docs/fleet-api/topics-channels/lidar
+- id: lidar-download-link-expired
+  surface: batch
+  status: unknown
+  condition: The generated ROSBAG download link is used more than 10 minutes after
+    generation.
+  documented_behaviour: '"the provided download link will be valid for only 10
+    minutes"'
+  error_shape: not published
+  remediation: Download within 10 minutes, or re-initiate the export.
+  source: https://docs.maymobility.com/docs/fleet-api/topics-channels/lidar
+- id: shift-timing-starttime-too-recent
+  surface: batch
+  status: unknown
+  condition: shift-timing startTime is from the current day.
+  documented_behaviour: '"the start time must not be from the current day; it should
+    be at least one day old"'
+  error_shape: not published
+  remediation: Use a startTime at least one day old.
+  source: https://docs.maymobility.com/docs/fleet-api/topics-channels/vehicle-shift-timing
+- id: data-not-yet-available
+  surface: batch
+  status: unknown
+  condition: A LiDAR export is requested for download before generation completes.
+  documented_behaviour: 'Generation is documented as taking up to ~5 minutes
+    ("estimated time within 5 minutes"); the pre-completion response is not
+    described.'
+  error_shape: not published
+  remediation: Poll or wait ~5 minutes before requesting the download.
+  source: https://docs.maymobility.com/docs/fleet-api/topics-channels/lidar
+coverage:
+  documented_failure_conditions: 12
+  with_published_status_code: 0
+  with_published_error_shape: 0
+  with_machine_readable_code: 0
+x-findings:
+- id: no-error-contract
+  severity: high
+  detail: 'Twelve distinct failure conditions are described in prose, and not one of
+    them has a published HTTP status code, error code or response shape. A client —
+    and especially an agent — cannot distinguish "window too long" from "outside
+    retention" from "not authorized" programmatically. This is the largest single
+    gap in the Fleet API contract.'
+- id: in-band-error-sentinel
+  severity: medium
+  detail: The /last-active endpoint returns an English sentence where a timestamp is
+    expected, inside a success payload. Any consumer that assumes a datetime type
+    will break on inactive vehicles.

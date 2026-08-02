@@ -1,23 +1,180 @@
 aid: may-mobility
 name: May Mobility
-description: 'May Mobility is a company surfaced via the API Evangelist harvest backlog (source: secondary-market)
-  and added to the network as a stub for full-pipeline profiling.'
+description: 'May Mobility is an American autonomous vehicle technology company headquartered
+  in Ann Arbor, Michigan, founded in 2017 by Edwin Olson, Alisyn Malek and Steve Vozar.
+  It develops and operates self-driving shuttle, microtransit and robotaxi services
+  in partnership with cities, transit agencies, commercial sites and ride-hail networks
+  including Uber and Lyft, using a proprietary Multi-Policy Decision Making (MPDM)
+  autonomy stack. For fleet partners May Mobility publishes a Fleet API at docs.maymobility.com
+  consisting of a Realtime API (WebSocket streaming of vehicle telemetry topics and
+  exterior camera video, the latter as serialized protobuf) and a Batch REST API that
+  returns historical telemetry, LiDAR ROSBAG exports, vehicle shift timings and last-active
+  status. Access is provisioned per account by the Fleet API team and authenticated
+  with AWS Cognito OAuth 2.0 client-credentials tokens. May Mobility also operates
+  its own autonomous system (AS398351) with a public NOC documentation site, peering
+  policy, responsible-disclosure program and internal PKI.'
+image: https://maymobility.com/apple-touch-icon.png
 url: https://raw.githubusercontent.com/api-evangelist/may-mobility/refs/heads/main/apis.yml
 x-type: company
 x-source: harvest:secondary-market
-x-tier: stub
-x-tier-reason: harvest
+x-tier: profiled
+x-tier-reason: enrichment-pipeline
 specificationVersion: '0.20'
 created: '2026-08-01'
 modified: '2026-08-01'
 tags:
 - Company
-apis: []
+- Autonomous Vehicles
+- Transportation
+- Mobility
+- Robotaxi
+- Fleet Management
+- Telemetry
+- Public Transit
+- Automotive
+- Streaming
+apis:
+- aid: may-mobility:fleet-realtime-api
+  name: May Mobility Fleet Realtime API
+  description: 'A WebSocket streaming API that delivers live May Mobility vehicle data
+    in two modes. Telemetry mode streams JSON messages for a comma-separated list of
+    per-vehicle topics (GPS, POSE, DRIVE_STATUS, RUNLEVEL, COLLISION_NOTIFICATION,
+    TRAFFIC_LIGHT and others) using the topic form /.vehicle.{vehicleID}.{topicName},
+    with a documented ceiling of 20 topics per connection. Video mode streams exterior
+    camera feeds for up to four vehicles per connection as serialized protobuf
+    (quic_wrapper wrapping May.image_t, mostly VP9). Authentication is an AWS Cognito
+    client-credentials access token passed as a token query parameter. Access is
+    provisioned by the May Mobility Fleet API team; the connection domain is issued
+    per account and is not published.'
+  humanURL: https://docs.maymobility.com/docs/intro
+  baseURL: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+  tags:
+  - Telemetry
+  - Streaming
+  - WebSockets
+  - Autonomous Vehicles
+  - Fleet Management
+  properties:
+  - type: Documentation
+    url: https://docs.maymobility.com/docs/intro
+  - type: GettingStarted
+    url: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+  - type: APIReference
+    url: https://docs.maymobility.com/docs/fleet-api/types-of-data
+  - type: Authentication
+    url: authentication/may-mobility-fleet-authentication.yml
+  - type: ChangeLog
+    url: https://docs.maymobility.com/docs/release-notes/realttime-api
+  - type: Webhooks
+    url: asyncapi/may-mobility-fleet-events.yml
+  - type: Protobuf
+    url: grpc/may-mobility-quic-wrapper.proto
+- aid: may-mobility:fleet-batch-api
+  name: May Mobility Fleet Batch (REST) API
+  description: 'A REST API that returns historical May Mobility vehicle data between
+    two Unix timestamps. Telemetry is retrieved per vehicle and topic at
+    /vehicles/{vehicleID}/topics/{topicName} with startTime and endTime parameters,
+    paginated in 30-second pages via an opaque metaToken carried on subsequent
+    requests. Discovery endpoints list available vehicles (/vehicles) and the topics
+    available for a vehicle (/vehicles/{vehicleID}/topics). Additional endpoints
+    return LiDAR exports as ROSBAG files (/lidar plus a /download step), vehicle shift
+    windows (/shift-timing) and vehicle last-active timestamps (/last-active).
+    Documented limits: a maximum 10-minute request window, a 7-day retention window,
+    no current-day data, and 5-day LiDAR log retention. Authentication is a bearer
+    AWS Cognito access token issued with a batch-specific scope.'
+  humanURL: https://docs.maymobility.com/docs/fleet-api/types-of-data
+  baseURL: https://docs.maymobility.com/docs/fleet-api/types-of-data
+  tags:
+  - Telemetry
+  - REST
+  - Autonomous Vehicles
+  - Fleet Management
+  - LiDAR
+  properties:
+  - type: Documentation
+    url: https://docs.maymobility.com/docs/fleet-api/types-of-data
+  - type: GettingStarted
+    url: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+  - type: APIReference
+    url: https://docs.maymobility.com/docs/fleet-api/topics-channels/gps
+  - type: Authentication
+    url: authentication/may-mobility-fleet-authentication.yml
+  - type: ChangeLog
+    url: https://docs.maymobility.com/docs/release-notes/batch-api
+  - type: ErrorCatalog
+    url: errors/may-mobility-fleet-error-catalog.yml
+  - type: DataModel
+    url: data-model/may-mobility-fleet-data-model.yml
 maintainers:
 - FN: Kin Lane
   email: kin@apievangelist.com
 - FN: APIs.json
   email: info@apis.io
+x-enrichment:
+  date: '2026-08-01'
+  status: enriched
+  artifacts_added: 17
+  pass: local-v1
 common:
 - type: Website
-  url: https://forgeglobal.com/may-mobility_stock/
+  url: https://maymobility.com/
+- type: DeveloperPortal
+  url: https://docs.maymobility.com/
+- type: Documentation
+  url: https://docs.maymobility.com/docs/intro
+- type: APIReference
+  url: https://docs.maymobility.com/docs/fleet-api/types-of-data
+- type: GettingStarted
+  url: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+- type: Blog
+  url: https://maymobility.com/posts/type/company-blog/
+- type: Support
+  url: https://maymobility.com/contact/
+- type: GitHubOrganization
+  url: https://github.com/maymobility
+- type: TermsOfService
+  url: https://maymobility.com/terms-of-use/
+- type: PrivacyPolicy
+  url: https://maymobility.com/privacy-policy/
+- type: Compliance
+  url: https://maymobility.com/cybersecurity/
+- type: TrustCenter
+  url: security/may-mobility-trust-center.yml
+- type: Security
+  url: https://net.maymobility.com/docs/policies/security
+- type: VulnerabilityDisclosure
+  url: security/may-mobility-vulnerability-disclosure.yml
+- type: SecurityTxt
+  url: well-known/may-mobility-security.txt
+- type: WellKnown
+  url: well-known/may-mobility-well-known.yml
+- type: DomainSecurity
+  url: security/may-mobility-domain-security.yml
+- type: Authentication
+  url: authentication/may-mobility-fleet-authentication.yml
+- type: OAuthScopes
+  url: scopes/may-mobility-scopes.yml
+- type: Conventions
+  url: conventions/may-mobility-fleet-conventions.yml
+- type: Conformance
+  url: conformance/may-mobility-conformance.yml
+- type: ErrorCatalog
+  url: errors/may-mobility-fleet-error-catalog.yml
+- type: Lifecycle
+  url: lifecycle/may-mobility-lifecycle.yml
+- type: StatusPage
+  url: https://status.net.maymobility.com/
+- type: ChangeLog
+  url: changelog/may-mobility-changelog.yml
+- type: DataModel
+  url: data-model/may-mobility-fleet-data-model.yml
+- type: Packages
+  url: packages/may-mobility-packages.yml
+- type: SDKs
+  url: packages/may-mobility-packages.yml
+- type: Protobuf
+  url: grpc/may-mobility-quic-wrapper.proto
+- type: Webhooks
+  url: asyncapi/may-mobility-fleet-events.yml
+- type: LLMsTxt
+  url: llms/may-mobility-llms.txt

@@ -1,0 +1,89 @@
+# May Mobility
+
+> May Mobility is an American autonomous vehicle technology company headquartered in Ann Arbor, Michigan, founded in 2017. It develops and operates self-driving shuttle, microtransit and robotaxi services with cities, transit agencies, commercial sites and ride-hail networks (Uber, Lyft, Grab), using a proprietary Multi-Policy Decision Making (MPDM) autonomy stack. For fleet partners it publishes a Fleet API: a WebSocket Realtime API for live vehicle telemetry and exterior camera video, and a Batch REST API for historical telemetry, LiDAR exports, shift timings and last-active status.
+
+## Important notes
+
+- **Access is not self-service.** Every Fleet API credential and the connection domain itself are provisioned by contacting the May Mobility Fleet API team. There is no public sign-up, no published base URL, and no sandbox.
+- **No machine-readable API contract is published.** There is no OpenAPI, no AsyncAPI, no GraphQL schema, no JSON Schema and no MCP server. Everything below is documentation.
+- **AI use policy.** maymobility.com, docs.maymobility.com and net.maymobility.com all publish Cloudflare Content Signals of `search=yes, ai-train=no, use=reference`, with an explicit EU DSM Directive 2019/790 Article 4 rights reservation and Disallow directives for nine named AI crawlers including ClaudeBot, GPTBot, CCBot and Google-Extended. Content may be indexed and referenced; it may not be used for model training.
+
+## APIs
+
+- [May Mobility Fleet API — Welcome](https://docs.maymobility.com/docs/intro): overview of the Realtime (WebSocket) and Batch (REST) surfaces.
+- [Connecting to Fleet API](https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api): AWS Cognito OAuth 2.0 client-credentials token flow; token passed as a `token` query parameter for Realtime and as `Authorization: Bearer` for Batch.
+- [Types of Data](https://docs.maymobility.com/docs/fleet-api/types-of-data): topic addressing (`/.vehicle.{vehicleID}.{topicName}`), Batch paths (`/vehicles/{vehicleID}/topics/{topicName}`), pagination via `metaToken`, and the 20-topic / 10-minute / 7-day limits.
+- [Video Streaming Output](https://docs.maymobility.com/docs/fleet-api/video-data-output): serialized `quic_wrapper` protobuf, VP9/VP8/JPEG encodings, frame sequencing.
+- [Decoding a Message](https://docs.maymobility.com/docs/fleet-api/decoding-a-message): vendor-provided protobuf static packages for JS/TS, Go, C# and C++.
+
+## Telemetry topics
+
+Realtime (WebSocket) topics, 15 documented. Eleven are also retrievable through the Batch API.
+
+- [GPS](https://docs.maymobility.com/docs/fleet-api/topics-channels/gps) — latitude, longitude, elevation with HDOP/TDOP uncertainty
+- [GPS_VELOCITY](https://docs.maymobility.com/docs/fleet-api/topics-channels/gps-velocity) — NED velocity, ground speed, heading
+- [POSE](https://docs.maymobility.com/docs/fleet-api/topics-channels/pose) — position, orientation, velocity, angular velocity, acceleration
+- [L2G](https://docs.maymobility.com/docs/fleet-api/topics-channels/l2g) — local-to-global pose transform
+- [ROUTE_LOCATION](https://docs.maymobility.com/docs/fleet-api/topics-channels/route-location) — current route-network edge and lat/lon/alt
+- [DRIVE_STATUS](https://docs.maymobility.com/docs/fleet-api/topics-channels/drive-status) — throttle, brake, steering, shift, mode (not available on Lexus vehicles)
+- [RUNLEVEL](https://docs.maymobility.com/docs/fleet-api/topics-channels/runlevel) — autonomy vs manual, plus health-derived and requested runlevels
+- [DRIVER_TAKEOVER](https://docs.maymobility.com/docs/fleet-api/topics-channels/driver-takeover) — intervention signals and takeover determination (not available on Lexus vehicles)
+- [COLLISION_NOTIFICATION](https://docs.maymobility.com/docs/fleet-api/topics-channels/collision-detected) — impact detection and airbag state
+- [TRAFFIC_LIGHT](https://docs.maymobility.com/docs/fleet-api/topics-channels/traffic-light) — light status and distance to next relevant light
+- [VEHICLE_STATE](https://docs.maymobility.com/docs/fleet-api/topics-channels/vehicle-state) — seat belts, lights, windows, wipers, airbags, tyre pressure, odometer, VIN
+- [HEALTH_SUMMARY](https://docs.maymobility.com/docs/fleet-api/topics-channels/health-summary) — status and errors of vehicle modules
+- [PLATFORM_HEALTH](https://docs.maymobility.com/docs/fleet-api/topics-channels/platform-health) — compute, storage, power and process health
+- [LIGHTING_STATUS](https://docs.maymobility.com/docs/fleet-api/topics-channels/lighting-status) — firmware-reported light state (not available on Lexus vehicles)
+- [TELE_OP_OBJECTS](https://docs.maymobility.com/docs/fleet-api/topics-channels/teleop-objects) — perception object list for teleoperation
+
+## Batch-only resources
+
+- [LiDAR](https://docs.maymobility.com/docs/fleet-api/topics-channels/lidar) — two-step ROSBAG export and download; 5-day retention, 30-second maximum window, 10-minute download link expiry
+- [Vehicle Shift Timings](https://docs.maymobility.com/docs/fleet-api/topics-channels/vehicle-shift-timing) — shift start/end per vehicle per day
+- [Vehicle Last Active](https://docs.maymobility.com/docs/fleet-api/topics-channels/last-active) — last in-service timestamp, 7-day retention
+
+## Release notes
+
+- [Batch (REST) API release notes](https://docs.maymobility.com/docs/release-notes/batch-api) — v2.0.0 current, v1 discontinued
+- [Realtime API release notes](https://docs.maymobility.com/docs/release-notes/realttime-api) — v2.0.0 current, v1 (NATS-based) discontinued
+
+## Security and network
+
+- [Responsible Disclosure policy](https://net.maymobility.com/docs/policies/security) — safe harbour; May Mobility shuttles are explicitly OUT of scope for security research
+- [security.txt](https://maymobility.com/.well-known/security.txt) — RFC 9116, PGP-signed (note: past its stated Expires date)
+- [Cybersecurity / Trust and Compliance](https://maymobility.com/cybersecurity/) and the [TrustShare portal](https://may-mobility.trustshare.com/home)
+- [NOC documentation](https://net.maymobility.com/) — AS398351, [peering policy](https://net.maymobility.com/docs/policies/peering), [operated networks](https://net.maymobility.com/docs/network/trust), [Root CA certificates](https://net.maymobility.com/docs/network/certs)
+- [PeeringDB AS398351](https://www.peeringdb.com/net/23152)
+
+## Company
+
+- [Home](https://maymobility.com/)
+- [About / Meet May](https://maymobility.com/meet-may/)
+- [Technology](https://maymobility.com/technology/) and [Safety](https://maymobility.com/technology/safety/)
+- [Our Solutions](https://maymobility.com/our-solutions/) — [Cities](https://maymobility.com/our-solutions/cities/), [Commercial](https://maymobility.com/our-solutions/commercial/), [Ride-hail](https://maymobility.com/our-solutions/ride-hail/)
+- [Locations](https://maymobility.com/locations/)
+- [Blog](https://maymobility.com/posts/type/company-blog/) and [News](https://maymobility.com/posts/type/company-news/)
+- [Resources](https://maymobility.com/resources/)
+- [Careers](https://maymobility.com/careers/)
+- [Contact](https://maymobility.com/contact/)
+- [Terms of Use](https://maymobility.com/terms-of-use/)
+- [Privacy Policy](https://maymobility.com/privacy-policy/)
+- [GitHub](https://github.com/maymobility)
+
+## API Evangelist artifacts
+
+Generated by the API Evangelist enrichment pipeline from the sources above.
+
+- [apis.yml](https://raw.githubusercontent.com/api-evangelist/may-mobility/refs/heads/main/apis.yml) — APIs.json 0.20 index
+- Event catalogue: `asyncapi/may-mobility-fleet-events.yml`
+- Authentication profile: `authentication/may-mobility-fleet-authentication.yml`
+- OAuth scope model: `scopes/may-mobility-scopes.yml`
+- API conventions: `conventions/may-mobility-fleet-conventions.yml`
+- Error catalogue: `errors/may-mobility-fleet-error-catalog.yml`
+- Data model: `data-model/may-mobility-fleet-data-model.yml`
+- Lifecycle: `lifecycle/may-mobility-lifecycle.yml`
+- Changelog: `changelog/may-mobility-changelog.yml`
+- Conformance: `conformance/may-mobility-conformance.yml`
+- Packages: `packages/may-mobility-packages.yml`
+- Protobuf: `grpc/may-mobility-quic-wrapper.proto`
+- Security: `security/` and `well-known/`

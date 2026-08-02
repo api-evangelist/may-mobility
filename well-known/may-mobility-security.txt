@@ -1,0 +1,17 @@
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
+
+Contact: mailto:security@maymobility.com
+Expires: 2025-05-25T16:00:00.000Z
+Encryption: https://net.maymobility.com/NOC_0x71B84C17_public.txt
+Preferred-Languages: en
+Canonical: https://maymobility.com/.well-known/security.txt
+Canonical: https://net.maymobility.com/security.txt
+Policy: https://net.maymobility.com/docs/policies/security
+-----BEGIN PGP SIGNATURE-----
+
+iHUEARYKAB0WIQRvuH7F+bZS2CJRg9ova2PrcbhMFwUCZG+OVwAKCRAva2PrcbhM
+FyvcAQCPVxgNBgpiFeU4goFNd30Qy0jGk85JE8HQYMVWWujyFQEA2VW+WNOCduPL
+ByirPVSiKXgyvrH+6zBfyqzp2/1Xogo=
+=geB/
+-----END PGP SIGNATURE-----

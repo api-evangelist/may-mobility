@@ -1,0 +1,74 @@
+generated: '2026-08-01'
+method: searched
+source: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+docs: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+note: 'Derived by reading the provider''s published authentication page, not from an
+  OpenAPI document — May Mobility publishes no machine-readable contract. Every value
+  below is either quoted from the docs or explicitly recorded as not published.'
+summary:
+  types: [oauth2]
+  oauth2_flows: [clientCredentials]
+  api_key_in: []
+  identity_provider: AWS Cognito
+  token_type: bearer
+  onboarding: manual
+  onboarding_note: 'Step 1 of the published flow is "Contact Fleet API team at May
+    Mobility for provisioning an account." There is no self-service sign-up; there is
+    no public developer registration page.'
+schemes:
+- name: cognitoClientCredentials
+  type: oauth2
+  flow: clientCredentials
+  identity_provider: AWS Cognito
+  token_endpoint: null
+  token_endpoint_note: 'Published as `url: ''provided-by-fleet-api-team''` in the
+    reference code sample. The Cognito domain is issued per account and is not
+    public.'
+  client_id: provisioned per account
+  client_secret: provisioned per account
+  client_authentication: client_secret_basic
+  client_authentication_detail: 'The reference sample sends `Authorization: Basic
+    ${base64Token}` with a base64 token supplied by the Fleet API team, plus
+    grant_type=client_credentials, client_id, client_secret and scope in an
+    application/x-www-form-urlencoded body.'
+  scopes_published: false
+  scopes_note: The `scope` value is documented as `provided-by-fleet-api-team` and
+    differs between the Realtime and Batch APIs. See scopes/may-mobility-scopes.yml.
+  response_field: access_token
+  applies_to:
+  - api: May Mobility Fleet Realtime API
+    placement: query
+    parameter: token
+    example: domain?token=access_token_here&...
+  - api: May Mobility Fleet Batch (REST) API
+    placement: header
+    header: Authorization
+    format: 'Bearer {access_token}'
+  sources:
+  - https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+transport_security:
+  tls_required: true
+  evidence: 'Docs state "Note: All connections are encrypted."'
+  mutual_tls: false
+  mutual_tls_note: May Mobility operates its own client-certificate intermediate CA
+    (May Mobility Intermediate CA ECC SLC) for internal applications, but mTLS is not
+    documented as a Fleet API requirement.
+x-findings:
+- id: token-in-query-string
+  severity: medium
+  detail: 'The Realtime (WebSocket) API accepts the bearer access token as a `token`
+    URL query parameter. Query-string credentials are recorded in server access logs,
+    browser history and referrer headers; RFC 6750 section 2.3 deprecates the URI
+    query parameter method. This is a common constraint of browser WebSocket clients
+    (which cannot set request headers), but it is worth noting as a real property of
+    the contract rather than an omission.'
+- id: no-discovery-document
+  severity: low
+  detail: No /.well-known/openid-configuration or /.well-known/oauth-authorization-server
+    is served on any May Mobility host (both 404). Because the Cognito domain is
+    account-issued, no public discovery document exists for the authorization server
+    either.
+- id: no-token-lifetime-published
+  severity: low
+  detail: Token TTL, refresh behaviour and rate limits on the token endpoint are not
+    documented.

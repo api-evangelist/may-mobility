@@ -1,0 +1,75 @@
+generated: '2026-08-01'
+method: searched
+probe: true
+url: https://may-mobility.trustshare.com/home
+platform: TrustShare (TrustCloud Corporation)
+landing_page: https://maymobility.com/cybersecurity/
+program:
+  name: Trust and Compliance Program
+  description: 'May Mobility publishes its security and compliance program through a
+    hosted TrustShare instance. The public cybersecurity page states the program is
+    surfaced as "a real-time feed from the compliance program in Trust Cloud" and
+    that May Mobility "continuously monitor, test, improve, and share our security
+    and compliance program".'
+certifications: []
+certifications_note: 'The TrustShare portal at https://may-mobility.trustshare.com/home
+  returns HTTP 200 but is a client-rendered single-page application; no certification
+  names (SOC 2, ISO 27001, PCI DSS, HIPAA, FedRAMP, GDPR, ISO 21434, TISAX) could be
+  read from the server-rendered response, and no certification list is published on
+  maymobility.com/cybersecurity/ itself. Certifications are therefore recorded as
+  UNVERIFIED rather than asserted. Individual documents on TrustShare portals are
+  commonly gated behind an NDA request flow. Re-probe with a rendering fetch to
+  confirm.'
+network_trust:
+  note: 'Separately from the TrustShare portal, May Mobility publishes an operational
+    trust surface on its NOC documentation site covering the networks and PKI it
+    operates. This is a real, verbatim-published artifact and is recorded here
+    because it is the only certification-grade security detail May Mobility puts in
+    the open.'
+  operated_networks_url: https://net.maymobility.com/docs/network/trust
+  operated_ipv4:
+  - 66.51.148.0/24
+  operated_ipv6:
+  - 2602:80a:2000::/40
+  - 2607:f790:fff6::/48
+  operated_domains:
+  - domain: maymobility.com
+    use: public
+  - domain: maymobility.net
+    use: backbone and internal network
+  certificates_url: https://net.maymobility.com/docs/network/certs
+  internal_pki:
+    root_ca: May Mobility Root CA ECC US2 (Ann Arbor, Michigan)
+    intermediates:
+    - May Mobility Intermediate CA ECC US2
+    - May Mobility Intermediate CA ECC SLC (client certificates)
+    key_algorithm: ECDSA P256
+    signing_algorithm: SHA256 ECDSA
+    key_storage_standard: FIPS 140-2 level 3 or higher
+    ocsp: http://ocsp.its.maymobility.com
+    published_pem: true
+    published_pem_note: Root and both intermediate CA certificates are published in
+      full PEM form on the certs page.
+  autonomous_system:
+    asn: 398351
+    org: May Mobility, Inc
+    peeringdb: https://www.peeringdb.com/net/23152
+    irr_as_set: RADB::AS-MAYMOBILITY
+    peering_policy: https://net.maymobility.com/docs/policies/peering
+    looking_glass: https://lg.net.maymobility.com/
+    abuse_contact: abuse@maymobility.com
+evidence:
+- source: https://maymobility.com/cybersecurity/
+  http_status: 200
+  keywords:
+  - trust and compliance program
+  - security and compliance
+  - trustshare
+  - trust cloud
+- source: https://may-mobility.trustshare.com/home
+  http_status: 200
+  note: JavaScript-rendered SPA shell; no compliance detail in the HTML response.
+- source: https://net.maymobility.com/docs/network/trust
+  http_status: 200
+- source: https://net.maymobility.com/docs/network/certs
+  http_status: 200

@@ -1,0 +1,80 @@
+generated: '2026-08-01'
+method: searched
+source: https://docs.maymobility.com/docs/fleet-api/decoding-a-message
+registry_search:
+  npm: searched, no first-party May Mobility package found
+  pypi: 'searched (maymobility, may-mobility, may-fleet-api) — all 404'
+  github: 'org github.com/maymobility exists (created 2020-12-12) but publishes only
+    1 public repo, the org profile repo. No SDK, no .proto, no client library.'
+  maven_central: not found
+  nuget: not found
+  pkg_go_dev: not found
+  rubygems: not found
+  packagist: not found
+  crates_io: not found
+packages:
+- language: javascript
+  name: May Mobility protobuf static package (JS/TS, NodeJS)
+  registry: null
+  distribution: vendor-provided
+  url: https://docs.maymobility.com/docs/fleet-api/decoding-a-message
+  install: null
+  official: true
+  public: false
+  status: Available
+  purpose: 'Generated protobuf static files for decoding the Fleet Realtime video
+    stream. Imported as `import { may } from "../proto-types/index.js"` in the
+    published sample, then `May.quic_wrapper.decode(...)` and `May.image_t.decode(...)`.'
+- language: go
+  name: May Mobility protobuf static package (Go)
+  registry: null
+  distribution: vendor-provided
+  url: https://docs.maymobility.com/docs/fleet-api/decoding-a-message
+  install: null
+  official: true
+  public: false
+  status: Available
+- language: csharp
+  name: May Mobility protobuf static package (C#)
+  registry: null
+  distribution: vendor-provided
+  url: https://docs.maymobility.com/docs/fleet-api/decoding-a-message
+  install: null
+  official: true
+  public: false
+  status: Available
+- language: cpp
+  name: May Mobility protobuf static package (C++)
+  registry: null
+  distribution: vendor-provided
+  url: https://docs.maymobility.com/docs/fleet-api/decoding-a-message
+  install: null
+  official: true
+  public: false
+  status: Available
+distribution_note: 'May Mobility ships first-party generated client packages in four
+  languages, but publishes NONE of them to a public registry. The docs state: "May
+  protobufs can be accessed from language-specific generated static files that will
+  be provided by May Mobility. The files will be plug and play... May Mobility will
+  generate the static files in the programming language used by the client." Every
+  package above is real and first-party, and every one requires contacting the Fleet
+  API team. `install:` is null everywhere because there is no public install command
+  to record, and none has been invented.'
+scope_note: These packages cover protobuf decoding for the video stream only. There
+  is no SDK for the Realtime telemetry WebSocket or the Batch REST API — telemetry is
+  delivered as plain JSON (protobuf is decoded server-side since v2.0.0), so those
+  surfaces are consumed with a generic HTTP/WebSocket client.
+x-findings:
+- id: sdks-not-publicly-distributed
+  severity: medium
+  detail: Four official client packages exist but none is discoverable or installable
+    without a vendor conversation. A prospective fleet partner evaluating the Fleet
+    API cannot read the protobuf definitions, pin a version, audit the code or
+    reproduce a build. The provider states the language list "will be updated" as the
+    Fleet API evolves, but the list has been JS/TS, Go, C# and C++ for the whole
+    observed period.
+- id: no-public-proto
+  severity: medium
+  detail: 'Only the `quic_wrapper` outer message is published (captured verbatim at
+    grpc/may-mobility-quic-wrapper.proto). The inner `May.image_t` message — the one
+    a client actually needs to render a frame — is not published in any form.'

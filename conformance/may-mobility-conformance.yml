@@ -1,0 +1,143 @@
+generated: '2026-08-01'
+method: derived
+source: docs.maymobility.com Fleet API documentation + live /.well-known and DNS
+  probes
+derivation_note: Derived from the provider's published documentation and from probes
+  recorded in well-known/, security/ and authentication/. No claim is asserted
+  without an evidence line.
+standards:
+- id: oauth2
+  conforms: true
+  evidence: 'Fleet API authentication is OAuth 2.0 client_credentials against AWS
+    Cognito, with client_secret_basic client authentication and an access_token
+    response (https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api).'
+- id: rfc6749-client-credentials
+  conforms: true
+  evidence: grant_type=client_credentials with client_id, client_secret and scope in
+    an application/x-www-form-urlencoded body.
+- id: rfc6750-bearer-token-usage
+  conforms: partial
+  evidence: 'Batch API uses the RFC 6750 preferred method (Authorization: Bearer).
+    The Realtime WebSocket API uses the URI query parameter method (?token=), which
+    RFC 6750 section 2.3 marks as NOT RECOMMENDED.'
+- id: rfc8414-oauth-authorization-server-metadata
+  conforms: false
+  evidence: /.well-known/oauth-authorization-server returns 404 on every May Mobility
+    host.
+- id: openid-connect-discovery
+  conforms: false
+  evidence: /.well-known/openid-configuration returns 404 on every May Mobility host.
+- id: rfc9457-problem-details
+  conforms: false
+  evidence: No error envelope of any kind is published; no application/problem+json.
+    See errors/may-mobility-fleet-error-catalog.yml.
+- id: openapi
+  conforms: false
+  evidence: 'No OpenAPI or Swagger document is served. Probed /openapi.json,
+    /openapi.yaml, /swagger.json, /api-docs, /docs on maymobility.com,
+    docs.maymobility.com and net.maymobility.com — all 404 or HTML shell. No spec is
+    linked from the documentation and none exists in the public GitHub org.'
+- id: asyncapi
+  conforms: false
+  evidence: 'No AsyncAPI document is served despite a real 15-topic streaming event
+    surface. Probed /asyncapi.yaml and /asyncapi.json — 404. The event surface is
+    catalogued at asyncapi/may-mobility-fleet-events.yml as documentation-derived,
+    not as a provider spec.'
+- id: graphql
+  conforms: false
+  evidence: No GraphQL surface documented or discovered.
+- id: json-schema
+  conforms: false
+  evidence: Message shapes are published as HTML field tables and JSON samples only;
+    no JSON Schema is provided for any of the 15 topics.
+- id: protobuf3
+  conforms: true
+  evidence: 'The Realtime video stream is proto3. The outer `quic_wrapper` message is
+    published verbatim in the docs and captured at
+    grpc/may-mobility-quic-wrapper.proto. The inner May.image_t definition is not
+    published.'
+- id: rfc9116-security-txt
+  conforms: partial
+  evidence: 'A PGP-signed security.txt is served at
+    https://maymobility.com/.well-known/security.txt with Contact, Expires,
+    Encryption, Preferred-Languages, Canonical and Policy fields. However its
+    Expires value is 2025-05-25T16:00:00.000Z — past, as observed 2026-08-01 — and
+    one of its two declared Canonical URLs
+    (https://net.maymobility.com/security.txt) is not at the RFC 9116
+    /.well-known/ path.'
+- id: rfc8615-well-known-uris
+  conforms: partial
+  evidence: security.txt is served at the correct /.well-known/ path on the apex. No
+    other well-known resource is served on any host.
+- id: rfc9309-robots-exclusion
+  conforms: true
+  evidence: robots.txt served on all three hosts with sitemap declarations.
+- id: content-signals
+  conforms: true
+  evidence: 'Cloudflare Content Signals published on all three hosts:
+    "search=yes,ai-train=no,use=reference", with an explicit EU DSM Directive
+    2019/790 Article 4 rights reservation and Disallow entries for nine named AI
+    crawlers. A genuine, machine-readable AI-use policy — rare in this catalog.'
+- id: a2a-agent-card
+  conforms: false
+  evidence: /.well-known/agent-card.json and /.well-known/agent.json both return 404
+    on maymobility.com, docs.maymobility.com and net.maymobility.com. No agent card
+    is published; none has been authored.
+- id: mcp
+  conforms: false
+  evidence: No hosted or remote MCP server found in the documentation, in the public
+    GitHub org, or in MCP registries.
+- id: rfc8594-sunset-header
+  conforms: false
+  evidence: No Sunset or Deprecation header support and no deprecation policy
+    documented. See lifecycle/may-mobility-lifecycle.yml.
+- id: dnssec
+  conforms: true
+  evidence: 'DNSSEC enabled on maymobility.com (probed 2026-08-01, see
+    security/may-mobility-domain-security.yml).'
+- id: caa
+  conforms: true
+  evidence: CAA records published restricting issuance to amazonaws.com,
+    amazontrust.com, awstrust.com, comodoca.com, digicert.com and letsencrypt.org.
+- id: spf
+  conforms: true
+  evidence: SPF record present on maymobility.com.
+- id: dmarc
+  conforms: true
+  evidence: 'DMARC published with policy p=reject — the strictest setting.'
+- id: hsts
+  conforms: true
+  evidence: HSTS enabled on maymobility.com and docs.maymobility.com with
+    max-age=15552000 (180 days).
+- id: tls-1-3
+  conforms: true
+  evidence: TLSv1.3 negotiated on maymobility.com and docs.maymobility.com.
+- id: fips-140-2
+  conforms: claimed
+  evidence: 'May Mobility states its internal PKI uses "FIPS 140-2 level 3 or higher"
+    key storage (https://net.maymobility.com/docs/network/certs). This is a
+    self-declared property of their private CA, not a certification of the Fleet API,
+    and no certificate number is published.'
+- id: gtfs
+  conforms: false
+  evidence: No GTFS or GTFS-Realtime feed found. Despite operating public-transit
+    microtransit deployments with municipal partners, May Mobility publishes no
+    transit-standard feed of its own; rider-facing scheduling is mediated by partner
+    apps (Uber, Lyft, Via and agency apps).
+- id: soc2
+  conforms: unverified
+  evidence: A TrustShare trust center exists at
+    https://may-mobility.trustshare.com/home but is a client-rendered SPA; no
+    certification names could be read. See security/may-mobility-trust-center.yml.
+summary:
+  conforms: 11
+  partial: 3
+  claimed: 1
+  unverified: 1
+  does_not_conform: 10
+  headline: 'Strong on infrastructure and transport security (DNSSEC, CAA, DMARC
+    reject, HSTS, TLS 1.3, own PKI, published AS and peering policy, real responsible
+    disclosure with safe harbour) and unusually strong on machine-readable AI-use
+    policy. Weak on API contract standards: no OpenAPI, no AsyncAPI, no JSON Schema,
+    no RFC 9457 errors, no OAuth/OIDC discovery metadata, no published scopes. The
+    security engineering is well ahead of the API description.'

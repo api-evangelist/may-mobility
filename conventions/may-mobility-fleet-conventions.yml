@@ -1,0 +1,154 @@
+generated: '2026-08-01'
+method: searched
+source: https://docs.maymobility.com/docs/fleet-api/types-of-data
+docs:
+- https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+- https://docs.maymobility.com/docs/fleet-api/types-of-data
+- https://docs.maymobility.com/docs/fleet-api/video-data-output
+authentication:
+  style: OAuth 2.0 client-credentials bearer token (AWS Cognito)
+  realtime_placement: '`token` URL query parameter'
+  batch_placement: 'Authorization: Bearer {token} header'
+  see: authentication/may-mobility-fleet-authentication.yml
+base_url:
+  published: false
+  note: 'Every published example writes the host as `domain`, `ENDPOINT` or
+    `REST-ENDPOINT`. The connection domain is issued per account by the Fleet API
+    team and is not public. No base URL has been guessed.'
+idempotency:
+  supported: false
+  note: 'No idempotency key, no request deduplication contract and no retry-safety
+    guidance is documented. The Batch API is read-only (all documented operations are
+    GET-shaped data retrieval), so idempotency is naturally satisfied for reads, but
+    the provider makes no stated idempotency contract and NO `Idempotency` pointer
+    has been wired for this provider.'
+pagination:
+  style: opaque continuation token
+  applies_to: Batch (REST) telemetry retrieval
+  initial_request: /vehicles/{vehicleID}/topics/{topicName}?startTime={unix}&endTime={unix}
+  subsequent_request: /vehicles/{vehicleID}/topics/{topicName}?meta={metaToken}
+  page_size_semantics: Each page contains 30 seconds of data; the number of records
+    per page depends on the publish frequency of the requested topic.
+  response_token_field: metaToken
+  response_meta_fields:
+  - {field: totalPages, description: total number of pages in the requested window}
+  - {field: totalRecords, description: total record count in the requested window}
+  - {field: frequency, description: publish frequency (Hz) of the requested topic}
+  - {field: currentPage, description: 1-indexed page number of this response}
+  - {field: currentStartTime, description: start of this page (unix seconds, fractional)}
+  - {field: currentEndTime, description: end of this page (unix seconds, fractional)}
+  note: On subsequent requests only the metaToken is required — startTime and endTime
+    are not re-sent.
+subscription_and_filtering:
+  realtime_telemetry: Comma-separated topic list in a `topics` query parameter using
+    the form /.vehicle.{vehicleID}.{topicName}
+  realtime_video: Comma-separated vehicle list in a `vehicles` query parameter
+  batch: vehicleID and topicName are path parameters; time window is query parameters
+  discovery_endpoints:
+  - {path: /vehicles, purpose: list available vehicles}
+  - {path: '/vehicles/{vehicleID}/topics', purpose: list topics available for a vehicle}
+limits:
+- name: max_topics_per_connection
+  value: 20
+  applies_to: Realtime API (telemetry)
+  behaviour: 'Requests with more than 20 topics fail — "the connection will not go
+    through and it will throw an error".'
+- name: max_vehicles_per_video_connection
+  value: 4
+  applies_to: Realtime API (video)
+  behaviour: Requests with more than 4 vehicles fail to connect.
+- name: max_request_window
+  value: 10 minutes
+  applies_to: Batch API telemetry
+- name: retention_window
+  value: 7 days
+  applies_to: Batch API telemetry and last-active
+  behaviour: Data can only be retrieved starting from 7 days ago up to the current
+    day.
+- name: current_day_exclusion
+  value: 'no current-day data'
+  applies_to: Batch API
+  behaviour: No data is available for the current day via the Batch API; the Realtime
+    API must be used instead.
+- name: lidar_retention
+  value: 5 days
+  applies_to: Batch API LiDAR export
+  behaviour: Logs older than 5 days are archived and not accessible through the API.
+- name: lidar_window
+  value: 30 seconds
+  applies_to: Batch API LiDAR export
+  behaviour: endTime is optional; the default and the maximum are both 30 seconds
+    after startTime. startTime must be at least a day old.
+- name: lidar_download_expiry
+  value: 10 minutes
+  applies_to: Batch API LiDAR download link
+- name: lidar_generation_time
+  value: ~5 minutes
+  applies_to: Batch API LiDAR export
+  behaviour: Estimated time before the generated ROSBAG file is available to download.
+- name: shift_timing_default_window
+  value: 24 hours
+  applies_to: Batch API shift-timing
+  behaviour: If no endTime is given, 24 hours is added to startTime. startTime must
+    be at least one day old.
+rate_limit_signaling:
+  documented: false
+  note: 'Release notes for September 2023 record that "limits" were added to the
+    Realtime API "for better concurrency and response times", but no rate-limit
+    headers, quotas or 429 semantics are published. The concurrency ceilings that ARE
+    published are the topic/vehicle counts recorded under `limits` above.'
+time_semantics:
+  request_timestamps: Unix timestamps in SECONDS, UTC (startTime / endTime)
+  message_utime: Microsecond host-clock timestamp, UTC, carried as a STRING in every
+    telemetry message
+  gps_utime_global: Global time of navigation solution generation (GPS topics)
+  last_active_format: 'MM-DD-YYYY HH:MM:SS (e.g. "01-24-2024 23:00:26")'
+  shift_timing_format: ISO 8601 with milliseconds and Z (e.g. 2024-09-12T21:33:15.377Z)
+  note: 'Three different time formats are published across the surface: microsecond
+    string utime in telemetry, unix seconds in request parameters, and two different
+    human/ISO date formats in the last-active and shift-timing responses. Callers
+    must normalise.'
+response_envelope:
+  batch_telemetry: '{ data: [ ...records... ], metaToken: "...", meta: { ... } }'
+  batch_last_active: 'A flat JSON object keyed by vehicle name, whose values are
+    either an ISO-ish datetime string OR the literal sentence "vehicle hasn''t been
+    active in the past 7 days".'
+  batch_shift_timing: A bare JSON array of shift objects (log_hash, shift_start_time,
+    shift_end_time, vehicle).
+  realtime_telemetry: A bare JSON message object per topic; every message carries
+    utime, vehicle and topic.
+  realtime_video: Serialized `quic_wrapper` protobuf; see
+    grpc/may-mobility-quic-wrapper.proto.
+  consistency_note: 'The three Batch response shapes are mutually inconsistent — an
+    envelope with data/meta for telemetry, a map for last-active, a bare array for
+    shift-timing — and there is no shared error envelope. See
+    errors/may-mobility-fleet-error-catalog.yml.'
+field_naming:
+  note: 'Message field naming is inconsistent between the published field tables and
+    the published JSON samples. COLLISION_NOTIFICATION documents the field as
+    `impact_detection` (snake_case) but the JSON sample emits `impactDetection`
+    (camelCase); TRAFFIC_LIGHT documents signal_type / status_straight_turn /
+    status_right_turn / status_left_turn in snake_case. Most other topics use
+    camelCase throughout. Recorded verbatim, not reconciled.'
+  ordering: 'Docs explicitly warn "Order of fields might differ" on every JSON sample.'
+versioning:
+  scheme: major version, not carried in the URL path
+  current: v2.0.0
+  previous: v1 (discontinued)
+  note: 'Both the Realtime and Batch APIs are documented at "Version v2.0.0
+    (Current)" with a "Version v1 (Discontinued)" section. Version is not visible in
+    any published path, header or parameter — the migration was a whole-surface
+    replacement, not a side-by-side version.'
+  see: lifecycle/may-mobility-lifecycle.yml
+encoding:
+  telemetry: application/json (protobuf decoded to JSON server-side since v2.0.0)
+  video: serialized protobuf (quic_wrapper wrapping May.image_t), compression NONE or
+    ZSTD, video encodings JPEG / VP8 / VP9 (mostly VP9)
+  lidar: ROSBAG file
+cross_links:
+  authentication: authentication/may-mobility-fleet-authentication.yml
+  scopes: scopes/may-mobility-scopes.yml
+  errors: errors/may-mobility-fleet-error-catalog.yml
+  lifecycle: lifecycle/may-mobility-lifecycle.yml
+  events: asyncapi/may-mobility-fleet-events.yml
+  data_model: data-model/may-mobility-fleet-data-model.yml

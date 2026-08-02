@@ -1,0 +1,47 @@
+generated: '2026-08-01'
+method: searched
+source: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+docs: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+grant: clientCredentials
+identity_provider: AWS Cognito
+schemes:
+- name: cognitoClientCredentials
+  source: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+  flows:
+  - flow: clientCredentials
+    tokenUrl: null
+    tokenUrl_note: Issued per account by the Fleet API team; documented in code
+      samples as 'provided-by-fleet-api-team'.
+scopes: []
+scopes_note: 'May Mobility documents that an OAuth 2.0 `scope` is REQUIRED on every
+  token request and that the required scope DIFFERS between the Realtime and Batch
+  surfaces — but it does not publish any scope string. Every published reference
+  writes the value as `provided-by-fleet-api-team`. No scope values have been
+  invented here; the list is deliberately empty.'
+scope_classes:
+- class: realtime
+  description: Scope used to authorize the WebSocket Realtime API (telemetry and
+    video modes).
+  values_published: false
+  evidence: https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api
+- class: batch
+  description: Scope used to authorize the Batch (REST) endpoints. Documented
+    separately on the last-active, shift-timing and LiDAR pages, each of which states
+    that the scope required "may differ from the real-time API endpoints" and that
+    the batch scope must be used.
+  values_published: false
+  evidence:
+  - https://docs.maymobility.com/docs/fleet-api/topics-channels/last-active
+  - https://docs.maymobility.com/docs/fleet-api/topics-channels/vehicle-shift-timing
+  - https://docs.maymobility.com/docs/fleet-api/topics-channels/lidar
+  quote: 'Scope: Scope to get authorization to this endpoint might vary with other
+    endpoints.'
+x-findings:
+- id: scope-values-unpublished
+  severity: medium
+  detail: 'A per-surface scope model exists and is enforced, but no scope name is
+    published anywhere in the documentation. A consumer cannot determine, before
+    contacting the Fleet API team, what authority a token will carry or how narrowly
+    it can be scoped. This is the single largest documentation gap in the May
+    Mobility auth contract, and it also blocks any least-privilege review of an
+    agent integration against a safety-relevant fleet surface.'

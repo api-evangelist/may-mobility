@@ -1,0 +1,83 @@
+generated: '2026-08-01'
+method: searched
+source: https://maymobility.com/.well-known/
+hosts:
+- host: https://maymobility.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 200
+    file: may-mobility-security.txt
+    note: RFC 9116, PGP-signed (SHA512). Expires field is 2025-05-25T16:00:00.000Z,
+      so the document is past its own stated expiry as observed on 2026-08-01.
+  - path: /.well-known/openid-configuration
+    status: 404
+  - path: /.well-known/oauth-authorization-server
+    status: 404
+  - path: /.well-known/api-catalog
+    status: 404
+  - path: /.well-known/ai-plugin.json
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /robots.txt
+    status: 200
+    note: Cloudflare-managed Content Signals block. Content-Signal is
+      "search=yes,ai-train=no,use=reference" for User-agent *, with explicit
+      Disallow for Amazonbot, Applebot-Extended, Bytespider, CCBot, ClaudeBot,
+      CloudflareBrowserRenderingCrawler, Google-Extended, GPTBot and
+      meta-externalagent.
+  - path: /sitemap.xml
+    status: 200
+  - path: /humans.txt
+    status: 200
+- host: https://docs.maymobility.com
+  documents:
+  - path: /.well-known/security.txt
+    status: 404
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /robots.txt
+    status: 200
+    note: Same Cloudflare Content Signals block as the apex, with Allow / for
+      User-agent *.
+  - path: /sitemap.xml
+    status: 200
+- host: https://net.maymobility.com
+  documents:
+  - path: /security.txt
+    status: 200
+    note: Byte-identical to the apex /.well-known/security.txt; declared as a
+      Canonical location inside the document itself. Not saved separately.
+  - path: /.well-known/security.txt
+    status: 404
+    note: The canonical RFC 9116 path is not served on this host; only the
+      non-standard /security.txt root path is.
+  - path: /.well-known/agent-card.json
+    status: 404
+  - path: /.well-known/agent.json
+    status: 404
+  - path: /sitemap.xml
+    status: 200
+consent_and_ai_signals:
+  content_signals: search=yes,ai-train=no,use=reference
+  ai_crawlers_disallowed:
+  - Amazonbot
+  - Applebot-Extended
+  - Bytespider
+  - CCBot
+  - ClaudeBot
+  - CloudflareBrowserRenderingCrawler
+  - Google-Extended
+  - GPTBot
+  - meta-externalagent
+  note: May Mobility publishes an explicit machine-readable AI-use reservation
+    (EU DSM Directive 2019/790 Article 4) across maymobility.com,
+    docs.maymobility.com and net.maymobility.com. Training use is refused;
+    search indexing and reference use are permitted.
+x-evidence:
+  fetched: '2026-08-01'
+  method: HTTP GET per path, status recorded as observed

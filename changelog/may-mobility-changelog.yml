@@ -1,0 +1,102 @@
+generated: '2026-08-01'
+method: searched
+source:
+- https://docs.maymobility.com/docs/release-notes/batch-api
+- https://docs.maymobility.com/docs/release-notes/realttime-api
+scheme: major version (v1, v2.0.0); entries are dated by month, not by semantic
+  release
+format: prose release notes, per API surface
+note: 'The two release-note pages are the only dated change record May Mobility
+  publishes. Entries are month-granular; no RSS/Atom feed, no per-change permalinks
+  and no versioned diff. Captured as published. Note the docs path for the realtime
+  page is misspelled as "realttime-api" by the provider.'
+apis:
+- api: May Mobility Fleet Batch (REST) API
+  url: https://docs.maymobility.com/docs/release-notes/batch-api
+  current_version: v2.0.0
+  entries:
+  - date: '2024-09'
+    version: v2.0.0
+    type: addition
+    breaking: false
+    highlights:
+    - Added shift-timing endpoint, returning the vehicle shifts associated with a
+      vehicle and day.
+  - date: '2023-12'
+    version: v2.0.0
+    type: addition
+    breaking: false
+    highlights:
+    - Added last-active endpoint to determine whether a vehicle is in service; takes
+      vehicle IDs and returns the ISO DateTime each vehicle was last in service.
+    note: This entry is published twice, verbatim, on the provider's page.
+  - date: '2023-09'
+    version: v2.0.0
+    type: addition
+    breaking: false
+    highlights:
+    - Added LiDAR endpoint to the Batch API that fetches LiDAR data in ROSBAG format.
+  - date: '2023-08'
+    version: v2.0.0
+    type: addition
+    breaking: false
+    highlights:
+    - Added filtering by start and end timestamps to retrieve data within a specific
+      time range.
+    - Added retrieval of the past 7 days of historical data.
+    - Introduced a maximum 10-minute duration limit for data retrieval.
+    - Added filtering by topic and by vehicle.
+  - version: v1
+    type: discontinued
+    breaking: true
+    highlights:
+    - 'v1 supported data retrieval for all vehicles and topic-based filtering. It was
+      discontinued in favour of v2, which the provider describes as offering "enhanced
+      filtering options and improved data retrieval capabilities."'
+- api: May Mobility Fleet Realtime API
+  url: https://docs.maymobility.com/docs/release-notes/realttime-api
+  current_version: v2.0.0
+  entries:
+  - date: '2024-06'
+    version: v2.0.0
+    type: addition
+    breaking: false
+    highlights:
+    - Added the TRAFFIC_LIGHT topic.
+  - date: '2024-04'
+    version: v2.0.0
+    type: addition
+    breaking: false
+    highlights:
+    - Added the COLLISION_NOTIFICATION topic.
+    - Added the VEHICLE_STATE topic.
+  - date: '2023-09'
+    version: v2.0.0
+    type: change
+    breaking: false
+    highlights:
+    - Added limits to the Realtime API for better concurrency and response times.
+  - date: '2023-08'
+    version: v2.0.0
+    type: change
+    breaking: true
+    highlights:
+    - Replaced the NATS client SDK data-fetching mechanism with WebSockets.
+    - Added topic and vehicle filtering.
+    - Moved protobuf-to-JSON conversion to the server, removing the need for protobuf
+      tooling on the client for telemetry.
+    - Added AWS Cognito authentication.
+    - Added video data transmission over WebSockets, using protobuf for large video
+      payloads.
+  - version: v1
+    type: discontinued
+    breaking: true
+    highlights:
+    - 'v1 used the NATS client SDK with topic and vehicle filtering and client-side
+      protobuf-to-JSON conversion. It was discontinued in favour of v2.'
+observations:
+- The most recent published change is September 2024. As observed on 2026-08-01 the
+  changelog has not been updated in roughly 23 months, while the underlying fleet has
+  expanded materially (Uber, Lyft, Grab partnerships).
+- No deprecation window, sunset date or migration guide was published for the v1 to
+  v2 transition on either surface; both are recorded only as "Discontinued".
