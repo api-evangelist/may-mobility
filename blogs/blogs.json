@@ -1,0 +1,14 @@
+{
+  "repo": "may-mobility",
+  "feeds": [
+    {
+      "source": "https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api",
+      "feed_url": "https://docs.maymobility.com/blog/rss.xml",
+      "title": "",
+      "saved": 0,
+      "method": "discovered"
+    }
+  ],
+  "post_count": 0,
+  "fetched": "2026-08-06T14:08:46Z"
+}
