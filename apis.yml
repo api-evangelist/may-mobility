@@ -13,6 +13,17 @@ description: 'May Mobility is an American autonomous vehicle technology company 
   with AWS Cognito OAuth 2.0 client-credentials tokens. May Mobility also operates
   its own autonomous system (AS398351) with a public NOC documentation site, peering
   policy, responsible-disclosure program and internal PKI.'
+deliveryModel:
+  model: saas
+  open_source: false
+  commercial: true
+  callable_host: false
+  label: Hosted service · you call their endpoint
+  confidence: medium
+  source:
+  - pricing
+  generated: '2026-08-28'
+  method: derived
 image: https://maymobility.com/apple-touch-icon.png
 url: https://raw.githubusercontent.com/api-evangelist/may-mobility/refs/heads/main/apis.yml
 x-type: company
