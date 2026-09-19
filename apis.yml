@@ -76,6 +76,12 @@ apis:
   tags:
   - Telemetry
   - Streaming
+  - WebSocket
+  - Autonomous Vehicles
+  - Fleet Management
+  tags_raw:
+  - Telemetry
+  - Streaming
   - WebSockets
   - Autonomous Vehicles
   - Fleet Management
