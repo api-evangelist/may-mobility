@@ -1,0 +1,40 @@
+edges:
+- partner_name: California DMV (autonomous vehicle permits)
+  partner: null
+  partner_match: register
+  type: contract
+  channel: regulator-register
+  relationship: standard-participant
+  direction: partner-built
+  evidence: https://www.dmv.ca.gov/portal/vehicle-industry-services/autonomous-vehicles/autonomous-vehicle-testing-permit-holders/
+  category: Autonomous vehicle public-road permit
+  contract_reference:
+    register: California DMV Autonomous Vehicle permit holders (dmv.ca.gov)
+    standard: California AV permit (CCR Title 13, Div. 1, Ch. 1, Art. 3.7)
+    spec_file: null
+    role: av-permit-holder
+    registered_name: MAY MOBILITY
+    register_jurisdiction: US-CA
+    matched_domain: maymobility.com
+    matched_by: domain
+    certified_products:
+    - product: California DMV AV testing with a driver permit
+      product_type: Testing with a driver
+      lapsed: false
+    signal_note: certified_products = one entry per DMV permit type held (testing with a driver / driverless testing
+      / deployment); the page lists current holders only, so none is lapsed. Approved locations and ODD are context,
+      never counted
+    detected_by: sweep-autonomous-vehicles.py
+    detected: '2026-10-20'
+    identity: wikidata Q137049542 'May Mobility' P856 https://maymobility.com
+    identity_source: wikidata P856 (labelled provenance step; Kin 2026-10-15 decision 1)
+  detected_by: sweep-autonomous-vehicles.py
+  first_seen: '2026-10-20'
+generated: '2026-10-20'
+method: searched
+source:
+- https://www.dmv.ca.gov/portal/vehicle-industry-services/autonomous-vehicles/autonomous-vehicle-testing-permit-holders/
+- https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/autonomous-vehicle-program-permits-issued
+checked:
+- https://www.cpuc.ca.gov/regulatory-services/licensing/transportation-licensing-and-analysis-branch/autonomous-vehicle-programs/autonomous-vehicle-program-permits-issued
+- https://www.dmv.ca.gov/portal/vehicle-industry-services/autonomous-vehicles/autonomous-vehicle-testing-permit-holders/
