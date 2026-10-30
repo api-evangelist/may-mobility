@@ -64,30 +64,112 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-May Mobility is an American autonomous vehicle technology company headquartered in Ann Arbor, Michigan, founded in 2017 by Edwin Olson, Alisyn Malek and Steve Vozar. It develops and operates self-driving shuttle, microtransit and robotaxi services with cities, transit agencies, commercial sites and ride-hail networks including Uber, Lyft and Grab, using a proprietary Multi-Policy Decision Making (MPDM) autonomy stack.
+May Mobility is an American autonomous vehicle technology company headquartered in Ann Arbor, Michigan, founded in 2017 by Edwin Olson, Alisyn Malek and Steve Vozar. It develops and operates self-driving shuttle, microtransit and robotaxi services in partnership with cities, transit agencies, commercial sites and ride-hail networks including Uber and Lyft, using a proprietary Multi-Policy Decision Making (MPDM) autonomy stack. For fleet partners May Mobility publishes a Fleet API at docs.maymobility.com consisting of a Realtime API (WebSocket streaming of vehicle telemetry topics and exterior camera video, the latter as serialized protobuf) and a Batch REST API that returns historical telemetry, LiDAR ROSBAG exports, vehicle shift timings and last-active status. Access is provisioned per account by the Fleet API team and authenticated with AWS Cognito OAuth 2.0 client-credentials tokens. May Mobility also operates its own autonomous system (AS398351) with a public NOC documentation site, peering policy, responsible-disclosure program and internal PKI.
 
-- Website: https://maymobility.com/
-- Developer documentation: https://docs.maymobility.com/
-- NOC / network documentation: https://net.maymobility.com/ (AS398351)
+**Areas:** Company · Autonomous Vehicles · Transportation · Mobility · Robotaxi · Fleet Management · Telemetry · Public Transit · Automotive · Streaming
 
-## API surface
+## May Mobility on APIs.io
 
-May Mobility publishes a **Fleet API** for fleet partners, in two parts:
+Everything profiled for May Mobility is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/may-mobility/](https://apis.io/providers/may-mobility/)** — or go straight to one of the APIs or properties below.
 
-- **Fleet Realtime API** — WebSocket streaming, in telemetry mode (15 documented per-vehicle topics as JSON) and video mode (exterior cameras as serialized protobuf).
-- **Fleet Batch (REST) API** — historical telemetry between two timestamps, plus LiDAR ROSBAG exports, vehicle shift timings and last-active status.
+### APIs (2)
 
-Both are authenticated with AWS Cognito OAuth 2.0 client-credentials tokens. **Access is not self-service** — accounts, scopes and the connection domain itself are provisioned by contacting the May Mobility Fleet API team.
+- [May Mobility Fleet Realtime API](https://apis.io/apis/may-mobility/fleet-realtime-api/) — A WebSocket streaming API that delivers live May Mobility vehicle data in two modes. Telemetry mode streams JSON messages for a comma-separated list of…
+- [May Mobility Fleet Batch (REST) API](https://apis.io/apis/may-mobility/fleet-batch-api/) — A REST API that returns historical May Mobility vehicle data between two Unix timestamps. Telemetry is retrieved per vehicle and topic at…
 
-## Contract discovery result
+### Published properties
 
-May Mobility publishes **no machine-readable API contract**. Probed across `maymobility.com`, `docs.maymobility.com` and `net.maymobility.com`: no OpenAPI/Swagger, no AsyncAPI, no GraphQL, no JSON Schema, no MCP server, no A2A agent card. The artifacts in this repo are derived from the provider's own published documentation and from live probes, with every claim evidenced.
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-## Notable findings
+#### AsyncAPI (1)
 
-- Infrastructure security is well ahead of the API description: DNSSEC, CAA, DMARC `p=reject`, HSTS, TLS 1.3, an in-house PKI with published Root/Intermediate CAs, a public AS with an open peering policy, and a real responsible-disclosure program with safe harbour.
-- The disclosure policy carries a safety-critical carve-out: **May Mobility shuttles are explicitly out of scope for security research.**
-- All three hosts publish Cloudflare Content Signals (`search=yes, ai-train=no, use=reference`) with an EU DSM Article 4 rights reservation and Disallow directives for nine named AI crawlers.
-- Twelve documented failure conditions, none with a published status code or error shape.
-- The advertised status page (`status.net.maymobility.com`) fails its TLS handshake.
-- The security.txt is past its own `Expires` date.
+Event-driven and webhook contracts.
+
+- [May Mobility Fleet Events](https://apis.io/asyncapis/may-mobility/may-mobility-fleet-events/)
+
+#### Security (4)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [May Mobility Domain Security](https://apis.io/security/may-mobility/may-mobility-domain-security/)
+- [May Mobility Fleet Authentication](https://apis.io/security/may-mobility/may-mobility-fleet-authentication/)
+- [May Mobility Trust Center](https://apis.io/security/may-mobility/may-mobility-trust-center/)
+- [May Mobility Vulnerability Disclosure](https://apis.io/security/may-mobility/may-mobility-vulnerability-disclosure/)
+
+#### OAuth scopes (1)
+
+The permissions the API asks for.
+
+- [May Mobility Scopes](https://apis.io/scopes/may-mobility/may-mobility-scopes/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
+- [Website](https://maymobility.com/)
+- [Documentation](https://docs.maymobility.com/docs/intro)
+- [Getting started](https://docs.maymobility.com/docs/fleet-api/connecting-to-fleet-api)
+- [API reference](https://docs.maymobility.com/docs/fleet-api/types-of-data)
+- [Support](https://maymobility.com/contact/)
+- [Blog](https://maymobility.com/posts/type/company-blog/)
+- [Security](https://net.maymobility.com/docs/policies/security)
+- [Compliance](https://maymobility.com/cybersecurity/)
+- [Terms of service](https://maymobility.com/terms-of-use/)
+- [Privacy policy](https://maymobility.com/privacy-policy/)
+- [GitHub](https://github.com/maymobility)
+- [Status](https://status.net.maymobility.com/)
+
+## API Evangelist rating
+
+**Kin Score 48.1** — developing · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 73.2 |
+| Contract quality | 39.0 |
+| Contract governance | 4.5 |
+| Operational transparency | 44.7 |
+| Developer ergonomics | 64.3 |
+| Access clarity | 36.8 |
+
+**Agent readiness 22.7** — agent-aware
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | — |
+| Reversibility Documented | — |
+| MCP Server | — |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | — |
+| Rate Limit Signal | — |
+| Event Surface Described | yes |
+| Agent Skills | — |
+| Well Known Catalog | — |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | na |
+| Operation Distinctiveness | na |
+
+**Regulatory alignment 45.1** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/may-mobility/](https://apis.io/providers/may-mobility/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for May Mobility: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/may-mobility/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
